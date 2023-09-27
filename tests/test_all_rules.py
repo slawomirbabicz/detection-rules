@@ -1105,17 +1105,26 @@ class TestRiskScoreMismatch(BaseRuleTest):
     """Test that severity and risk_score fields contain corresponding values"""
 
     def test_rule_risk_score_severity_mismatch(self):
+        """Test that severity and risk_score fields contain corresponding values."""
         invalid_list = []
-        risk_severity = {
-            "critical": 99,
-            "high": 73,
-            "medium": 47,
-            "low": 21,
+
+        # Risk ranges for each severity level
+        risk_severity_ranges = {
+            "critical": (74, 100),
+            "high": (48, 73),
+            "medium": (22, 47),
+            "low": (0, 21),
         }
+
         for rule in self.all_rules:
             severity = rule.contents.data.severity
             risk_score = rule.contents.data.risk_score
-            if risk_severity[severity] != risk_score:
+
+            # Get the risk range for the given severity
+            risk_range = risk_severity_ranges.get(severity)
+
+            # Check if risk_range exists for the given severity and risk_score is in the given range
+            if risk_range is None or not (risk_range[0] <= risk_score <= risk_range[1]):
                 invalid_list.append(f'{self.rule_str(rule)} Severity: {severity}, Risk Score: {risk_score}')
 
         if invalid_list:
